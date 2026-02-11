@@ -1,0 +1,71 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\rafae\\Desktop\\DLLUnturned\\Arrastar\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{0C1B8435-9E84-4B49-B9E7-F3143709545E}|Arrastar.csproj|c:\\users\\rafae\\desktop\\dllunturned\\arrastar\\vehicledeploypatch.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0C1B8435-9E84-4B49-B9E7-F3143709545E}|Arrastar.csproj|solutionrelative:vehicledeploypatch.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0C1B8435-9E84-4B49-B9E7-F3143709545E}|Arrastar.csproj|C:\\Users\\rafae\\Desktop\\DLLUnturned\\Arrastar\\vehiclelimiter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0C1B8435-9E84-4B49-B9E7-F3143709545E}|Arrastar.csproj|solutionrelative:vehiclelimiter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0C1B8435-9E84-4B49-B9E7-F3143709545E}|Arrastar.csproj|C:\\Users\\rafae\\Desktop\\DLLUnturned\\Arrastar\\vehiclelimiterconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0C1B8435-9E84-4B49-B9E7-F3143709545E}|Arrastar.csproj|solutionrelative:vehiclelimiterconfiguration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "VehicleDeployPatch.cs",
+              "DocumentMoniker": "C:\\Users\\rafae\\Desktop\\DLLUnturned\\Arrastar\\VehicleDeployPatch.cs",
+              "RelativeDocumentMoniker": "VehicleDeployPatch.cs",
+              "ToolTip": "C:\\Users\\rafae\\Desktop\\DLLUnturned\\Arrastar\\VehicleDeployPatch.cs",
+              "RelativeToolTip": "VehicleDeployPatch.cs",
+              "ViewState": "AgIAADUAAAAAAAAAAAAAAFUAAAADAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-26T21:11:27.548Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "VehicleLimiter.cs",
+              "DocumentMoniker": "C:\\Users\\rafae\\Desktop\\DLLUnturned\\Arrastar\\VehicleLimiter.cs",
+              "RelativeDocumentMoniker": "VehicleLimiter.cs",
+              "ToolTip": "C:\\Users\\rafae\\Desktop\\DLLUnturned\\Arrastar\\VehicleLimiter.cs",
+              "RelativeToolTip": "VehicleLimiter.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAQwBwAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-24T14:03:55.771Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "VehicleLimiterConfiguration.cs",
+              "DocumentMoniker": "C:\\Users\\rafae\\Desktop\\DLLUnturned\\Arrastar\\VehicleLimiterConfiguration.cs",
+              "RelativeDocumentMoniker": "VehicleLimiterConfiguration.cs",
+              "ToolTip": "C:\\Users\\rafae\\Desktop\\DLLUnturned\\Arrastar\\VehicleLimiterConfiguration.cs",
+              "RelativeToolTip": "VehicleLimiterConfiguration.cs",
+              "ViewState": "AgIAAAsAAAAAAAAAAAA1wB0AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-26T20:19:29.918Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

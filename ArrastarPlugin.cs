@@ -1,6 +1,6 @@
-﻿using Rocket.Core.Plugins;
-using HarmonyLib;
 using Rocket.Core.Logging;
+using Rocket.Core.Plugins;
+using HarmonyLib;
 
 namespace Arrastar
 {

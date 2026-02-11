@@ -1,4 +1,4 @@
-﻿using Rocket.API;
+using Rocket.API;
 
 namespace Arrastar
 {
@@ -40,7 +40,8 @@ namespace Arrastar
 			DragStartedMessage = "Voce comecou a arrastar o jogador.";
 			DragStoppedMessage = "Voce parou de arrastar o jogador.";
 			VehicleNeedsTwoSeatsMessage = "Esse veiculo nao possui as duas vagas para arrastar um jogador.";
-			DraggedPlayerCannotExitVehicleMessage = "Voce so pode sair quando quem esta te arrastando sair do veiculo.";
+			DraggedPlayerCannotExitVehicleMessage = "Voce nao pode sair do veiculo enquanto estiver sendo arrastado.";
 		}
 	}
 }
+

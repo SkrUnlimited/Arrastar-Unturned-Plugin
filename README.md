@@ -19,7 +19,7 @@ Designed for roleplay and moderated servers, it gives administrators full contro
 
 ## 🔐 Permission
 
-arrastar.use
+arrastar.drag
 
 
 Only players with this permission can use the drag feature.

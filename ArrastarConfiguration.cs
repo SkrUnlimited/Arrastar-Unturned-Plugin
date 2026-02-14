@@ -9,9 +9,11 @@ namespace Arrastar
 		public ushort DragStrength;
 		public float FollowDistance;
 		public float FollowIntervalSeconds;
+		public float FollowTeleportRateLimitSeconds;
 		public float FollowTeleportThreshold;
 		public bool RequireTargetSurrendered;
 		public bool EnableVehicleDrag;
+		public bool EnableDebugLogging;
 		public string NoPermissionMessage;
 		public string TargetNotFoundMessage;
 		public string TargetNotSurrenderedMessage;
@@ -29,9 +31,11 @@ namespace Arrastar
 			DragStrength = 75;
 			FollowDistance = 1.3f;
 			FollowIntervalSeconds = 0.075f;
+			FollowTeleportRateLimitSeconds = 0.075f;
 			FollowTeleportThreshold = 0.35f;
 			RequireTargetSurrendered = false;
 			EnableVehicleDrag = true;
+			EnableDebugLogging = false;
 			NoPermissionMessage = "Voce nao tem permissao para arrastar jogadores.";
 			TargetNotFoundMessage = "Olhe diretamente para um jogador para arrastar.";
 			TargetNotSurrenderedMessage = "Olhe para um jogador rendido para arrastar.";

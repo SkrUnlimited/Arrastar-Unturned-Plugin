@@ -1,6 +1,8 @@
 using Rocket.Core.Logging;
 using Rocket.Core.Plugins;
 using HarmonyLib;
+using SDG.Unturned;
+using Steamworks;
 
 namespace Arrastar
 {
@@ -16,15 +18,18 @@ namespace Arrastar
 		{
 			Instance = this;
 			Logger.Log("[Arrastar] Iniciando plugin");
+			SurrenderDragPatch.SanitizeConfiguration(Configuration?.Instance);
 
 			_harmony = new Harmony(HarmonyId);
 			_harmony.PatchAll();
+			Provider.onEnemyDisconnected += OnEnemyDisconnected;
 
 			Logger.Log("[Arrastar] Patches aplicados");
 		}
 
 		protected override void Unload()
 		{
+			Provider.onEnemyDisconnected -= OnEnemyDisconnected;
 			SurrenderDragPatch.ReleaseAllCustomDrags();
 			SurrenderDragPatch.ResetRuntimeState();
 
@@ -33,6 +38,15 @@ namespace Arrastar
 
 			Instance = null;
 			Logger.Log("[Arrastar] Plugin descarregado");
+		}
+
+		private static void OnEnemyDisconnected(SteamPlayer steamPlayer)
+		{
+			CSteamID steamId = steamPlayer?.playerID?.steamID ?? CSteamID.Nil;
+			if (steamId != CSteamID.Nil)
+			{
+				SurrenderDragPatch.HandlePlayerDisconnected(steamId);
+			}
 		}
 	}
 }

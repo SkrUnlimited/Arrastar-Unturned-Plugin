@@ -55,6 +55,8 @@ namespace Arrastar
 		private const float MaximumDragDistance = 8f;
 		private const ushort MinimumDragStrength = 1;
 		private const ushort MaximumDragStrength = 200;
+		private const float MinimumPostReleaseEquipUseCooldownSeconds = 0f;
+		private const float MaximumPostReleaseEquipUseCooldownSeconds = 3f;
 
 		private static readonly HashSet<CSteamID> AllowedVehicleExitOnce = new HashSet<CSteamID>();
 		private static readonly Dictionary<CSteamID, float> PendingReleaseByCaptor = new Dictionary<CSteamID, float>();
@@ -63,6 +65,7 @@ namespace Arrastar
 		private static readonly Dictionary<CSteamID, CSteamID> DraggedTargetByCaptor = new Dictionary<CSteamID, CSteamID>();
 		private static readonly Dictionary<CSteamID, CSteamID> CaptorByDraggedTarget = new Dictionary<CSteamID, CSteamID>();
 		private static readonly Dictionary<CSteamID, float> NextFollowTeleportByTarget = new Dictionary<CSteamID, float>();
+		private static readonly Dictionary<CSteamID, float> PostReleaseEquipUseCooldownByTarget = new Dictionary<CSteamID, float>();
 
 		private struct VehicleEntryAllowance
 		{
@@ -114,6 +117,7 @@ namespace Arrastar
 			DraggedTargetByCaptor.Clear();
 			CaptorByDraggedTarget.Clear();
 			NextFollowTeleportByTarget.Clear();
+			PostReleaseEquipUseCooldownByTarget.Clear();
 		}
 
 		internal static void SanitizeConfiguration(ArrastarConfiguration cfg)
@@ -129,6 +133,7 @@ namespace Arrastar
 			cfg.FollowIntervalSeconds = Mathf.Clamp(cfg.FollowIntervalSeconds, MinimumFollowIntervalSeconds, MaximumFollowIntervalSeconds);
 			cfg.FollowTeleportRateLimitSeconds = Mathf.Clamp(cfg.FollowTeleportRateLimitSeconds, MinimumFollowIntervalSeconds, MaximumFollowIntervalSeconds);
 			cfg.FollowTeleportThreshold = Mathf.Clamp(cfg.FollowTeleportThreshold, MinimumFollowTeleportThreshold, MaximumFollowTeleportThreshold);
+			cfg.PostReleaseEquipUseCooldownSeconds = Mathf.Clamp(cfg.PostReleaseEquipUseCooldownSeconds, MinimumPostReleaseEquipUseCooldownSeconds, MaximumPostReleaseEquipUseCooldownSeconds);
 		}
 
 		internal static bool TryGetConfiguration(out ArrastarConfiguration cfg)
@@ -188,10 +193,33 @@ namespace Arrastar
 
 		internal static bool IsCustomDragTarget(Player target)
 		{
-			// Gesture can change while seated in vehicles, so custom drag state is tracked by captor fields.
-			return target?.animator != null
-				&& target.animator.captorItem == 0
-				&& target.animator.captorID != CSteamID.Nil;
+			if (target?.animator == null)
+			{
+				return false;
+			}
+
+			CSteamID targetId = GetSteamId(target);
+			if (targetId == CSteamID.Nil)
+			{
+				return false;
+			}
+
+			if (!CaptorByDraggedTarget.TryGetValue(targetId, out CSteamID linkedCaptorId) || linkedCaptorId == CSteamID.Nil)
+			{
+				return false;
+			}
+
+			return target.animator.captorItem == 0 && target.animator.captorID == linkedCaptorId;
+		}
+
+		internal static void ForceDequip(Player player)
+		{
+			if (player?.equipment == null)
+			{
+				return;
+			}
+
+			player.equipment.dequip();
 		}
 
 		internal static void ReleaseAllCustomDrags()
@@ -331,6 +359,63 @@ namespace Arrastar
 			}
 		}
 
+		internal static bool IsPostReleaseEquipUseCooldownActive(Player player, float now)
+		{
+			if (player == null || !TryGetConfiguration(out ArrastarConfiguration cfg) || !cfg.EnablePostReleaseEquipUseCooldown)
+			{
+				return false;
+			}
+
+			if (cfg.PostReleaseEquipUseCooldownSeconds <= 0f)
+			{
+				return false;
+			}
+
+			CSteamID targetId = GetSteamId(player);
+			if (targetId == CSteamID.Nil || !PostReleaseEquipUseCooldownByTarget.TryGetValue(targetId, out float blockUntil))
+			{
+				return false;
+			}
+
+			if (now < blockUntil)
+			{
+				return true;
+			}
+
+			PostReleaseEquipUseCooldownByTarget.Remove(targetId);
+			return false;
+		}
+
+		internal static void SchedulePostReleaseEquipUseCooldown(Player player)
+		{
+			if (player?.life == null || player.life.isDead || !TryGetConfiguration(out ArrastarConfiguration cfg) || !cfg.EnablePostReleaseEquipUseCooldown)
+			{
+				return;
+			}
+
+			float cooldownSeconds = Mathf.Clamp(cfg.PostReleaseEquipUseCooldownSeconds, MinimumPostReleaseEquipUseCooldownSeconds, MaximumPostReleaseEquipUseCooldownSeconds);
+			if (cooldownSeconds <= 0f)
+			{
+				return;
+			}
+
+			CSteamID targetId = GetSteamId(player);
+			if (targetId == CSteamID.Nil)
+			{
+				return;
+			}
+
+			PostReleaseEquipUseCooldownByTarget[targetId] = Time.realtimeSinceStartup + cooldownSeconds;
+		}
+
+		internal static void ClearPostReleaseEquipUseCooldown(CSteamID steamId)
+		{
+			if (steamId != CSteamID.Nil)
+			{
+				PostReleaseEquipUseCooldownByTarget.Remove(steamId);
+			}
+		}
+
 		private static void LinkDragPair(CSteamID captorId, CSteamID targetId)
 		{
 			if (captorId == CSteamID.Nil || targetId == CSteamID.Nil)
@@ -397,6 +482,7 @@ namespace Arrastar
 			RevokeForcedVehicleEntryAllowance(steamId);
 			ClearPendingRelease(steamId);
 			ClearBlockedVehicleExitNotice(steamId);
+			ClearPostReleaseEquipUseCooldown(steamId);
 			NextFollowTeleportByTarget.Remove(steamId);
 		}
 
@@ -531,6 +617,30 @@ namespace Arrastar
 					foreach (CSteamID steamId in stale)
 					{
 						NextFollowTeleportByTarget.Remove(steamId);
+					}
+				}
+
+				stale = null;
+				foreach (KeyValuePair<CSteamID, float> pair in PostReleaseEquipUseCooldownByTarget)
+				{
+					if (activePlayers.Contains(pair.Key) && pair.Value >= now)
+					{
+						continue;
+					}
+
+					if (stale == null)
+					{
+						stale = new List<CSteamID>();
+					}
+
+					stale.Add(pair.Key);
+				}
+
+				if (stale != null)
+				{
+					foreach (CSteamID steamId in stale)
+					{
+						PostReleaseEquipUseCooldownByTarget.Remove(steamId);
 					}
 				}
 
@@ -919,6 +1029,8 @@ namespace Arrastar
 			RevokeForcedVehicleEntryAllowance(targetId);
 			RevokeVehicleExitAllowance(targetId);
 			NextFollowTeleportByTarget.Remove(targetId);
+			ForceDequip(target);
+			SchedulePostReleaseEquipUseCooldown(target);
 			target.animator.captorID = CSteamID.Nil;
 			target.animator.captorItem = 0;
 			target.animator.captorStrength = 0;
@@ -944,6 +1056,8 @@ namespace Arrastar
 			RevokeForcedVehicleEntryAllowance(targetId);
 			RevokeVehicleExitAllowance(targetId);
 			NextFollowTeleportByTarget.Remove(targetId);
+			ForceDequip(target);
+			SchedulePostReleaseEquipUseCooldown(target);
 
 			target.animator.captorID = CSteamID.Nil;
 			target.animator.captorItem = 0;
@@ -1082,7 +1196,8 @@ namespace Arrastar
 				return;
 			}
 
-			if (target.animator.gesture == EPlayerGesture.ARREST_START || target.animator.captorID != CSteamID.Nil)
+			bool targetAlreadyArrested = target.animator.gesture == EPlayerGesture.ARREST_START;
+			if (IsCustomDragTarget(target))
 			{
 				if (!string.IsNullOrWhiteSpace(cfg.TargetAlreadyDraggedMessage))
 				{
@@ -1091,7 +1206,7 @@ namespace Arrastar
 				return;
 			}
 
-			if (cfg.RequireTargetSurrendered && target.animator.gesture != EPlayerGesture.SURRENDER_START)
+			if (cfg.RequireTargetSurrendered && !targetAlreadyArrested && target.animator.gesture != EPlayerGesture.SURRENDER_START)
 			{
 				if (!string.IsNullOrWhiteSpace(cfg.TargetNotSurrenderedMessage))
 				{
@@ -1100,7 +1215,7 @@ namespace Arrastar
 				return;
 			}
 
-			if (target.animator.gesture != EPlayerGesture.SURRENDER_START)
+			if (!targetAlreadyArrested && target.animator.gesture != EPlayerGesture.SURRENDER_START)
 			{
 				target.animator.sendGesture(EPlayerGesture.SURRENDER_START, true);
 			}
@@ -1111,6 +1226,7 @@ namespace Arrastar
 				return;
 			}
 
+			ForceDequip(target);
 			LinkDragPair(captorId, targetId);
 			target.animator.captorID = captorId;
 			target.animator.captorItem = 0;
@@ -1208,6 +1324,8 @@ namespace Arrastar
 				{
 					continue;
 				}
+
+				ForceDequip(target);
 
 				Player captor = FindPlayerBySteamId(target.animator.captorID);
 				if (captor == null || captor.life == null || captor.life.isDead || captor.animator == null || captor.movement == null)
@@ -1674,6 +1792,56 @@ namespace Arrastar
 			{
 				SurrenderDragPatch.RevokeForcedVehicleEntryAllowance(draggedId);
 			}
+		}
+	}
+
+	[HarmonyPatch]
+	public static class DraggedPlayerEquipmentGuardPatches
+	{
+		private static bool ShouldBlock(PlayerEquipment equipment)
+		{
+			if (!Provider.isServer)
+			{
+				return false;
+			}
+
+			Player player = equipment?.player;
+			if (!SurrenderDragPatch.IsCustomDragTarget(player)
+				&& !SurrenderDragPatch.IsPostReleaseEquipUseCooldownActive(player, Time.realtimeSinceStartup))
+			{
+				return false;
+			}
+
+			SurrenderDragPatch.ForceDequip(player);
+			return true;
+		}
+
+		[HarmonyPatch(typeof(PlayerEquipment), "ReceiveEquipRequest")]
+		[HarmonyPrefix]
+		private static bool ReceiveEquipRequest_Prefix(PlayerEquipment __instance, byte page, byte x, byte y)
+		{
+			return !ShouldBlock(__instance);
+		}
+
+		[HarmonyPatch(typeof(PlayerEquipment), "ServerEquip")]
+		[HarmonyPrefix]
+		private static bool ServerEquip_Prefix(PlayerEquipment __instance, byte page, byte x, byte y)
+		{
+			return !ShouldBlock(__instance);
+		}
+
+		[HarmonyPatch(typeof(PlayerEquipment), "use")]
+		[HarmonyPrefix]
+		private static bool Use_Prefix(PlayerEquipment __instance)
+		{
+			return !ShouldBlock(__instance);
+		}
+
+		[HarmonyPatch(typeof(PlayerEquipment), "simulate_UseableInput")]
+		[HarmonyPrefix]
+		private static bool SimulateUseableInput_Prefix(PlayerEquipment __instance, uint simulation, EAttackInputFlags inputPrimary, EAttackInputFlags inputSecondary, bool inputSteady)
+		{
+			return !ShouldBlock(__instance);
 		}
 	}
 }

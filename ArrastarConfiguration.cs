@@ -13,6 +13,8 @@ namespace Arrastar
 		public float FollowTeleportThreshold;
 		public bool RequireTargetSurrendered;
 		public bool EnableVehicleDrag;
+		public bool EnablePostReleaseEquipUseCooldown;
+		public float PostReleaseEquipUseCooldownSeconds;
 		public bool EnableDebugLogging;
 		public string NoPermissionMessage;
 		public string TargetNotFoundMessage;
@@ -35,6 +37,8 @@ namespace Arrastar
 			FollowTeleportThreshold = 0.35f;
 			RequireTargetSurrendered = false;
 			EnableVehicleDrag = true;
+			EnablePostReleaseEquipUseCooldown = true;
+			PostReleaseEquipUseCooldownSeconds = 0.3f;
 			EnableDebugLogging = false;
 			NoPermissionMessage = "Voce nao tem permissao para arrastar jogadores.";
 			TargetNotFoundMessage = "Olhe diretamente para um jogador para arrastar.";

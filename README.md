@@ -23,6 +23,8 @@ Key adjustable options:
 - `FollowTeleportThreshold`
 - `RequireTargetSurrendered`
 - `EnableVehicleDrag`
+- `EnablePostReleaseEquipUseCooldown`
+- `PostReleaseEquipUseCooldownSeconds` (default: 0.3, use `0` to disable)
 - `EnableDebugLogging`
 
 All messages and behavior can be customized inside `ArrastarConfiguration.xml`.
